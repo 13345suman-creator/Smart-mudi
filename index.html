@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a5f2a">
+<title>Smart Mudi Khana - দোকান ম্যানেজার</title>
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="manifest" href="manifest.json">
+
+<script src="lib/qrcode.min.js"></script>
+<script src="lib/html5-qrcode.min.js"></script>
+</head>
+
+<body>
+
+<div id="app">
+
+<!-- ================= HEADER ================= -->
+<header class="header no-print">
+  <div class="shop-name">
+    <span id="animatedShopName" class="anim-slide">Smart Mudi Khana</span>
+  </div>
+
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="app.setLanguage('bn')">বাংলা</button>
+    <button class="lang-btn" onclick="app.setLanguage('hi')">हिंदी</button>
+    <button class="lang-btn" onclick="app.setLanguage('en')">English</button>
+  </div>
+
+  <div class="date-display" id="currentDate">Loading...</div>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main class="main-content" id="mainContent">
+  <div class="loading">Loading app...</div>
+
+  <!-- SCANNER -->
+  <div id="scannerSection" style="display:none;margin-top:15px;">
+    <h3>📷 বারকোড / QR স্ক্যানার</h3>
+    <div id="reader" style="width:100%;max-width:320px;margin:auto;"></div>
+    <button class="primary-btn" onclick="startScan()">স্ক্যান শুরু করুন</button>
+  </div>
+
+  <!-- BILLING -->
+  <div id="billingSection" style="display:none;margin-top:15px;">
+    <h3>🧾 Billing</h3>
+    <div id="billingItems"></div>
+    <div id="billingTotal" style="margin-top:10px;font-weight:bold;">Total: ₹0</div>
+
+    <div style="margin-top:10px;">
+      <label><input type="checkbox" id="soundToggle" checked> 🔊 Payment Sound</label>
+    </div>
+
+    <div id="paymentSection" style="margin-top:15px;">
+      <label><input type="radio" name="payMode" value="cash" checked> Cash</label>
+      <label style="margin-left:10px;"><input type="radio" name="payMode" value="upi"> UPI</label>
+      <label style="margin-left:10px;"><input type="radio" name="payMode" value="mixed"> Mixed</label>
+
+      <div id="mixedPaymentBox" style="display:none;margin-top:8px;">
+        <input id="cashAmount" type="number" placeholder="Cash amount">
+        <input id="upiAmount" type="number" placeholder="UPI amount">
+      </div>
+
+      <button class="primary-btn" style="margin-top:10px;" onclick="finalizeBill()">✔ Complete Payment</button>
+    </div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div id="inventorySection" style="display:none;margin-top:15px;">
+    <h3>📦 Inventory</h3>
+    <input id="invName" placeholder="Product Name">
+    <input id="invBarcode" placeholder="Barcode">
+    <input id="invPrice" type="number" placeholder="Sell Price">
+    <button class="primary-btn" onclick="addInventoryProduct()">Add</button>
+    <div id="inventoryList"></div>
+  </div>
+
+  <!-- UDHARI -->
+  <div id="udhariSection" style="display:none;padding:10px;">
+    <div style="background:#1a5f2a;color:#fff;padding:12px;border-radius:8px;text-align:center;">
+      <h2 style="margin:0;">📒 Udhari Khata</h2>
+      <small>Smart Mudi Khana</small>
+    </div>
+
+    <input id="udhariSearch"
+      placeholder="🔍 Name or Phone দিয়ে খুঁজুন"
+      style="width:100%;padding:8px;margin:10px 0;"
+      oninput="showUdhariKhata()"/>
+
+    <div id="udhariList"></div>
+  </div>
+
+</main>
+
+<!-- NAV -->
+<nav class="nav-bar no-print">
+  <button onclick="app.navigate('dashboard')">🏠 Home</button>
+  <button onclick="app.navigate('inventory')">📦 Stock</button>
+  <button onclick="app.navigate('billing')">🧾 Bill</button>
+  <button onclick="showUdhariKhata()">📒 Udhari</button>
+</nav>
+
+<!-- MODAL + TOAST -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle">Title</h2>
+      <button class="modal-close" onclick="app.closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+</div>
+
+<!-- 🔐 LOCK SCREEN (DEFAULT HIDDEN – VERY IMPORTANT) -->
+<div id="lockScreen" style="
+position:fixed;
+inset:0;
+background:#1a5f2a;
+color:#fff;
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9999;
+">
+  <div style="width:300px;text-align:center;">
+    <h2>🔒 App Locked</h2>
+    <input id="lockPassword" type="password" placeholder="Enter password" style="width:100%;padding:10px;">
+    <button style="margin-top:10px;width:100%;" onclick="unlockApp()">Unlock</button>
+    <p id="lockError" style="display:none;color:#ffcccc;">Wrong password</p>
+    <button style="margin-top:12px;width:100%;" onclick="openChangePassword()">Change Password</button>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD -->
+<div id="changePassModal" style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.6);
+align-items:center;
+justify-content:center;
+z-index:10000;
+">
+  <div style="background:#fff;padding:15px;border-radius:8px;width:300px;">
+    <h3>Set Password</h3>
+    <input id="newPass" type="password" placeholder="New password">
+    <button onclick="changePassword()">Save</button>
+    <button onclick="closeChangePassword()">Cancel</button>
+  </div>
+</div>
+
+<!-- RECEIPT -->
+<div id="receipt" style="display:none;">
+  <div style="text-align:center;">
+    <h2 id="rShopName">SMART MUDI KHANA</h2>
+    <hr>
+  </div>
+  <div>Bill No: <span id="rBillNo"></span></div>
+  <div>Date: <span id="rDate"></span></div>
+  <div>Time: <span id="rTime"></span></div>
+  <table width="100%"><tbody id="rItems"></tbody></table>
+  <h3>Total: ₹<span id="rTotal"></span></h3>
+  <div>Payment: <span id="rPayment"></span></div>
+  <button onclick="printReceipt()">🖨️ Print</button>
+  <button onclick="closeReceipt()">Close</button>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
