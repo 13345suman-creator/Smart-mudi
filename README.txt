@@ -17,15 +17,19 @@ Setup Instructions:
 5. Start using!
 
 File Structure:
-smart-mudi-khana/
-├── index.html          (Main HTML file)
+📁 (root / main folder)
+│
+├── index.html
+├── manifest.json
+│
 ├── css/
-│   └── style.css       (All styles)
+│   └── style.css
+│
 ├── js/
-│   └── app.js          (Application logic)
+│   └── app.js
+│
 ├── lib/
-│   ├── qrcode.min.js   (QR Code library)
-│   └── html5-qrcode.min.js (Barcode scanner library)
-└── README.txt          (This file)
+│   ├── html5-qrcode.min.js
+│   └── qrcode.min.js
 
 Note: For barcode scanner to work, you must use HTTPS or localhost.
